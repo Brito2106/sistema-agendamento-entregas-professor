@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Agendamento de Entregas</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <header class="cabecalho">
+            <h1>Agendamento de Entregas</h1>
+            <p>Organize as entregas da sua loja</p>
+        </header>
+
+        <section class="card">
+
+            <h2>Agendar uma entrega</h2>
+
+            <label for="data">Escolha o dia da entrega</label>
+
+            <input type="date" id="data">
+
+            <label for="entregador">Escolha o entregador</label>
+
+            <select id="entregador">
+                <option value="">Selecione um entregador</option>
+            </select>
+
+            <button id="btnContinuar" type="button">
+                Ver horários disponíveis
+            </button>
+
+        </section>
+
+        <section id="horarios" class="card horarios-container" style="display: none;">
+
+            <h2>Horários disponíveis</h2>
+
+            <div id="manha">
+                <h3>Manhã</h3>
+            </div>
+
+            <div id="tarde">
+                <h3>Tarde</h3>
+            </div>
+
+        </section>
+
+        <section id="agendaDia" class="card">
+
+            <h2>Agenda do Dia</h2>
+
+            <button type="button" id="btnAgenda">
+                Ver agenda do dia
+            </button>
+
+            <div id="listaAgenda" style="display: none;">
+
+                <p id="totalEntregas"></p>
+
+                <div id="agenda"></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- FORMULÁRIO DA ENTREGA -->
+
+    <section id="formularioEntrega" class="card formulario-entrega" style="display: none;">
+
+        <h2>Nova entrega</h2>
+
+        <p id="horarioSelecionado"></p>
+
+        <label for="cliente">Cliente</label>
+
+        <select id="cliente">
+            <option value="">
+                Selecione um cliente
+            </option>
+        </select>
+
+        <label for="enderecoEntrega">
+            Endereço da entrega
+        </label>
+
+        <input type="text" id="enderecoEntrega" placeholder="Ex: Rua das Flores, 123">
+
+        <label for="descricao">
+            Descrição
+        </label>
+
+        <input type="text" id="descricao" placeholder="Ex: Entrega de materiais">
+
+        <label for="observacao">
+            Observação
+        </label>
+
+        <input type="text" id="observacao" placeholder="Observações da entrega">
+
+        <h3>Itens da entrega</h3>
+
+        <div id="itensEntrega">
+
+            <div class="item">
+
+                <label>Produto</label>
+
+                <input type="text" class="produto" placeholder="Ex: Cimento">
+
+                <label>Quantidade</label>
+
+                <input type="number" class="quantidade" placeholder="Ex: 10" min="1">
+
+            </div>
+
+        </div>
+
+        <button type="button" id="btnAdicionarItem">
+            + Adicionar outro item
+        </button>
+
+        <button type="button" id="btnConfirmarEntrega">
+            Confirmar entrega
+        </button>
+
+    </section>
+
+
+    <!-- MODAL DE DETALHES -->
+
+    <div id="modalEntrega" class="modal">
+
+        <div class="modal-conteudo">
+
+            <button id="btnFecharModal" class="fechar-modal" type="button">
+                ×
+            </button>
+
+            <h2>Detalhes da Entrega</h2>
+
+            <div id="detalhesEntrega"></div>
+
+            <div class="acoes-entrega">
+
+                <button id="btnEditarEntrega" type="button">
+                    Editar entrega
+                </button>
+
+                <button id="btnIniciarEntrega" type="button">
+                    Iniciar entrega
+                </button>
+
+                <button id="btnConcluirEntrega" type="button">
+                    Marcar como concluída
+                </button>
+
+                <button id="btnCancelarEntrega" type="button">
+                    Cancelar entrega
+                </button>
+
+            </div>
+
+            <div id="formularioEdicao" class="formulario-edicao" style="display: none;">
+
+                <h3>Editar entrega</h3>
+
+                <label for="editarCliente">
+                    Cliente
+                </label>
+
+                <select id="editarCliente">
+                    <option value="">
+                        Selecione um cliente
+                    </option>
+                </select>
+
+
+                <label for="editarEntregador">
+                    Entregador
+                </label>
+
+                <select id="editarEntregador">
+                    <option value="">
+                        Selecione um entregador
+                    </option>
+                </select>
+
+
+                <label for="editarData">
+                    Data da entrega
+                </label>
+
+                <input type="date" id="editarData">
+
+
+                <label for="editarHoraInicio">
+                    Horário inicial
+                </label>
+
+                <input type="time" id="editarHoraInicio">
+
+
+                <label for="editarHoraFim">
+                    Horário final
+                </label>
+
+                <input type="time" id="editarHoraFim">
+
+
+                <label for="editarEndereco">
+                    Endereço
+                </label>
+
+                <input type="text" id="editarEndereco" placeholder="Endereço da entrega">
+
+
+                <div class="botoes-edicao">
+
+                    <button id="btnSalvarEdicao" type="button">
+                        Salvar alterações
+                    </button>
+
+                    <button id="btnCancelarEdicao" type="button">
+                        Voltar
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
