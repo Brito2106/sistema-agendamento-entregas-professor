@@ -120,6 +120,11 @@ const btnSalvarEdicao =
 const btnCancelarEdicao =
     document.getElementById('btnCancelarEdicao');
 
+const itensEdicao =
+    document.getElementById('itensEdicao');
+
+const btnAdicionarItemEdicao =
+    document.getElementById('btnAdicionarItemEdicao');
 
 // =========================
 // VARIÁVEIS
@@ -899,7 +904,7 @@ async function confirmarEntrega() {
 // MOSTRAR DETALHES
 // =========================
 
-function mostrarDetalhesEntrega(
+async function mostrarDetalhesEntrega(
     entrega,
     horaInicio,
     horaFim
@@ -938,26 +943,41 @@ function mostrarDetalhesEntrega(
 
 
     let itens =
-        '';
+        '<li>Nenhum item cadastrado</li>';
 
+    try {
 
-    if (
-        entrega.itens &&
-        entrega.itens.length > 0
-    ) {
+        const respostaItens =
+            await fetch(
+                `${API}/itens-entrega/entrega/${entrega.id_entrega}`
+            );
 
-        itens =
-            entrega.itens
-                .map(
-                    item =>
-                        `<li>${item.produto} - quantidade: ${item.quantidade}</li>`
-                )
-                .join('');
+        if (respostaItens.ok) {
 
-    } else {
+            const dadosItens =
+                await respostaItens.json();
 
-        itens =
-            '<li>Nenhum item cadastrado</li>';
+            if (
+                dadosItens.itens &&
+                dadosItens.itens.length > 0
+            ) {
+
+                itens =
+                    dadosItens.itens
+                        .map(
+                            item =>
+                                `<li>${item.produto} - quantidade: ${item.quantidade}</li>`
+                        )
+                        .join('');
+            }
+        }
+
+    } catch (erro) {
+
+        console.error(
+            'Erro ao carregar itens da entrega:',
+            erro
+        );
     }
 
 
@@ -1022,48 +1042,48 @@ function mostrarDetalhesEntrega(
 
     if (status === 'Agendada') {
 
-    btnEditarEntrega.style.display =
-        'block';
+        btnEditarEntrega.style.display =
+            'block';
 
-    btnIniciarEntrega.style.display =
-        'block';
+        btnIniciarEntrega.style.display =
+            'block';
 
-    btnConcluirEntrega.style.display =
-        'none';
+        btnConcluirEntrega.style.display =
+            'none';
 
-    btnCancelarEntrega.style.display =
-        'block';
-
-
-} else if (status === 'Em andamento') {
-
-    btnEditarEntrega.style.display =
-        'block';
-
-    btnIniciarEntrega.style.display =
-        'none';
-
-    btnConcluirEntrega.style.display =
-        'block';
-
-    btnCancelarEntrega.style.display =
-        'block';
+        btnCancelarEntrega.style.display =
+            'block';
 
 
-} else {
+    } else if (status === 'Em andamento') {
 
-    btnEditarEntrega.style.display =
-        'none';
+        btnEditarEntrega.style.display =
+            'block';
 
-    btnIniciarEntrega.style.display =
-        'none';
+        btnIniciarEntrega.style.display =
+            'none';
 
-    btnConcluirEntrega.style.display =
-        'none';
+        btnConcluirEntrega.style.display =
+            'block';
 
-    btnCancelarEntrega.style.display =
-        'none';
-}
+        btnCancelarEntrega.style.display =
+            'block';
+
+
+    } else {
+
+        btnEditarEntrega.style.display =
+            'none';
+
+        btnIniciarEntrega.style.display =
+            'none';
+
+        btnConcluirEntrega.style.display =
+            'none';
+
+        btnCancelarEntrega.style.display =
+            'none';
+    }
 
     //ABRIR MODAL
     modalEntrega.style.display = 'flex';
@@ -1184,6 +1204,9 @@ async function abrirEdicaoEntrega() {
     editarEndereco.value =
         entregaAtual.endereco_entrega || '';
 
+    // Carregar itens da entrega
+    await carregarItensEdicao();
+
 
     // Mostrar formulário
 
@@ -1291,6 +1314,215 @@ async function carregarEntregadoresEdicao() {
         );
     }
 }
+
+// =========================
+// CARREGAR ITENS PARA EDIÇÃO
+// =========================
+
+async function carregarItensEdicao() {
+
+    itensEdicao.innerHTML = '';
+
+    if (!entregaAtual) {
+        return;
+    }
+
+    try {
+
+        const resposta =
+            await fetch(
+                `${API}/itens-entrega/entrega/${entregaAtual.id_entrega}`
+            );
+
+        if (!resposta.ok) {
+            throw new Error(
+                `Erro HTTP: ${resposta.status}`
+            );
+        }
+
+        const dados =
+            await resposta.json();
+
+        if (
+            !dados.itens ||
+            dados.itens.length === 0
+        ) {
+
+            itensEdicao.innerHTML =
+                '<p>Nenhum item cadastrado.</p>';
+
+            return;
+        }
+
+        dados.itens.forEach(
+            (item) => {
+
+                criarItemEdicao(
+                    item
+                );
+            }
+        );
+
+    } catch (erro) {
+
+        console.error(
+            'Erro ao carregar itens:',
+            erro
+        );
+
+        alert(
+            'Não foi possível carregar os itens da entrega.'
+        );
+    }
+}
+
+
+// =========================
+// CRIAR ITEM NA EDIÇÃO
+// =========================
+
+function criarItemEdicao(
+    item = null
+) {
+
+    const div =
+        document.createElement('div');
+
+    div.classList.add(
+        'item',
+        'item-edicao'
+    );
+
+    if (item) {
+
+        div.dataset.id =
+            item.id_item;
+    }
+
+    div.innerHTML = `
+
+        <label>Produto</label>
+
+        <input
+            type="text"
+            class="produto-edicao"
+            placeholder="Ex: Cimento"
+            value="${item ? item.produto : ''}"
+        >
+
+        <label>Quantidade</label>
+
+        <input
+            type="number"
+            class="quantidade-edicao"
+            placeholder="Ex: 10"
+            min="1"
+            value="${item ? item.quantidade : ''}"
+        >
+
+        <button
+            type="button"
+            class="btnExcluirItemEdicao"
+        >
+            Excluir item
+        </button>
+
+    `;
+
+    const btnExcluir =
+        div.querySelector(
+            '.btnExcluirItemEdicao'
+        );
+
+    btnExcluir.addEventListener(
+        'click',
+        async () => {
+
+            // ITEM NOVO, ainda não está no banco
+            if (!div.dataset.id) {
+
+                div.remove();
+
+                return;
+            }
+
+            const confirmar =
+                confirm(
+                    'Tem certeza que deseja excluir este item?'
+                );
+
+            if (!confirmar) {
+                return;
+            }
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        `${API}/itens-entrega/${div.dataset.id}`,
+                        {
+                            method: 'DELETE'
+                        }
+                    );
+
+                const dados =
+                    await resposta.json();
+
+                if (!resposta.ok) {
+
+                    alert(
+                        dados.erro ||
+                        'Não foi possível excluir o item.'
+                    );
+
+                    return;
+                }
+
+                div.remove();
+
+                alert(
+                    'Item excluído com sucesso.'
+                );
+
+            } catch (erro) {
+
+                console.error(
+                    'Erro ao excluir item:',
+                    erro
+                );
+
+                alert(
+                    'Erro ao conectar com o servidor.'
+                );
+            }
+        }
+    );
+
+    itensEdicao.appendChild(
+        div
+    );
+}
+
+
+// =========================
+// ADICIONAR NOVO ITEM
+// =========================
+
+btnAdicionarItemEdicao.addEventListener(
+    'click',
+    () => {
+
+        // Remove a mensagem de nenhum item
+        const mensagem =
+            itensEdicao.querySelector('p');
+
+        if (mensagem) {
+            mensagem.remove();
+        }
+
+        criarItemEdicao();
+    }
+);
 
 // =========================
 // SALVAR EDIÇÃO
@@ -1446,6 +1678,138 @@ async function salvarEdicaoEntrega() {
             'Entrega atualizada com sucesso!'
         );
 
+        // =========================
+        // SALVAR ITENS DA ENTREGA
+        // =========================
+
+        const itens =
+            itensEdicao.querySelectorAll(
+                '.item-edicao'
+            );
+
+        for (
+            const itemDiv of itens
+        ) {
+
+            const produtoInput =
+                itemDiv.querySelector(
+                    '.produto-edicao'
+                );
+
+            const quantidadeInput =
+                itemDiv.querySelector(
+                    '.quantidade-edicao'
+                );
+
+            const produto =
+                produtoInput.value.trim();
+
+            const quantidade =
+                Number(
+                    quantidadeInput.value
+                );
+
+            if (!produto) {
+
+                alert(
+                    'Informe o produto de todos os itens.'
+                );
+
+                return;
+            }
+
+            if (
+                !Number.isInteger(quantidade) ||
+                quantidade <= 0
+            ) {
+
+                alert(
+                    'A quantidade deve ser um número inteiro maior que zero.'
+                );
+
+                return;
+            }
+
+            // ITEM JÁ EXISTENTE
+            if (itemDiv.dataset.id) {
+
+                const respostaItem =
+                    await fetch(
+                        `${API}/itens-entrega/${itemDiv.dataset.id}`,
+                        {
+                            method: 'PUT',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    produto:
+                                        produto,
+
+                                    quantidade:
+                                        quantidade
+                                })
+                        }
+                    );
+
+                const dadosItem =
+                    await respostaItem.json();
+
+                if (!respostaItem.ok) {
+
+                    alert(
+                        dadosItem.erro ||
+                        'Não foi possível atualizar um dos itens.'
+                    );
+
+                    return;
+                }
+
+                // ITEM NOVO
+            } else {
+
+                const respostaItem =
+                    await fetch(
+                        `${API}/itens-entrega`,
+                        {
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    id_entrega:
+                                        entregaAtual.id_entrega,
+
+                                    produto:
+                                        produto,
+
+                                    quantidade:
+                                        quantidade
+                                })
+                        }
+                    );
+
+                const dadosItem =
+                    await respostaItem.json();
+
+                if (!respostaItem.ok) {
+
+                    alert(
+                        dadosItem.erro ||
+                        'Não foi possível cadastrar um novo item.'
+                    );
+
+                    return;
+                }
+            }
+        }
 
         // Buscar dados atualizados
 
@@ -1479,6 +1843,12 @@ async function salvarEdicaoEntrega() {
         // Atualizar horários
 
         await carregarHorarios();
+
+        // Atualizar a agenda do dia
+
+        if (dataInput.value) {
+            await carregarAgenda();
+        }
 
     } catch (erro) {
 
@@ -1556,10 +1926,10 @@ async function atualizarStatus(
             mostrarDetalhesEntrega(
                 entregaAtual,
                 entregaAtual.hora_inicio ||
-                    horarioSelecionadoAtual?.hora_inicio,
+                horarioSelecionadoAtual?.hora_inicio,
 
                 entregaAtual.hora_fim ||
-                    horarioSelecionadoAtual?.hora_fim
+                horarioSelecionadoAtual?.hora_fim
             );
         }
 
